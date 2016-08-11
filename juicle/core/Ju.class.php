@@ -6,13 +6,13 @@ declare(strict_types = 1);
  * @link   http://php.juicler.com
  */
 class Ju{
-    // applications collections
+   
     static private $_a = array();
-    // components collections
+    
     static private $_c = array();
-    // config
+    
     static private $_config = array();
-    // autoload path
+    
     static public $autoLoadPath;
 
     /**
@@ -20,90 +20,89 @@ class Ju{
      *
      * @return mixed
      */
-    static public function init()
-    {
-        if (!AR_DEBUG) :
+    static public function init(){
+        if (!IS_DEBUG) :
             error_reporting(0);
         endif;
 
-        Ar::import(AR_CORE_PATH . 'alias.func.php');
+        self::import(CORE_PATH . 'alias.func.php');
 
         self::$autoLoadPath = array(
-            AR_CORE_PATH,
-            AR_FRAME_PATH,
-            AR_COMP_PATH,
-            AR_COMP_PATH . 'Db' . DS,
-            AR_COMP_PATH . 'Url' . DS,
-            AR_COMP_PATH . 'Format' . DS,
-            AR_COMP_PATH . 'Validator' . DS,
-            AR_COMP_PATH . 'Hash' . DS,
-            AR_COMP_PATH . 'Rpc' . DS,
-            AR_COMP_PATH . 'List' . DS,
-            AR_COMP_PATH . 'Cache' . DS,
-            AR_COMP_PATH . 'Tools' . DS,
-            AR_COMP_PATH . 'Ext' . DS
+            CORE_PATH,
+            FRAME_PATH,
+            COMP_PATH,
+            COMP_PATH . 'Db' . DS,
+            COMP_PATH . 'Url' . DS,
+            COMP_PATH . 'Format' . DS,
+            COMP_PATH . 'Validator' . DS,
+            COMP_PATH . 'Hash' . DS,
+            COMP_PATH . 'Rpc' . DS,
+            COMP_PATH . 'List' . DS,
+            COMP_PATH . 'Cache' . DS,
+            COMP_PATH . 'Tools' . DS,
+            COMP_PATH . 'Ext' . DS
         );
-        if (AR_DEBUG && !AR_AS_CMD) :
-            arComp('ext.out')->deBug('[START]');
+        if (IS_DEBUG && !AS_CMD) :
+            Comp('ext.out')->deBug('[START]');
         endif;
         // 子项目目录
-        defined('AR_PUBLIC_CONFIG_PATH') or define('AR_PUBLIC_CONFIG_PATH', AR_ROOT_PATH . 'Conf' . DS);
+        defined('PUBLIC_CONFIG_PATH') or define('PUBLIC_CONFIG_PATH', ROOT_PATH . 'Conf' . DS);
 
         // 外部扩展库工具
-        if (AR_OUTER_START) :
-            Ar::c('url.skeleton')->generateIntoOther();
-            $comonConfigFile = realpath(dirname(AR_MAN_PATH)) . DS . 'Conf' . DS . 'public.config.php';
+        if (OUTER_START) :
+            self::c('url.skeleton')->generateIntoOther();
+            $comonConfigFile = realpath(dirname(MAN_PATH)) . DS . 'Conf' . DS . 'public.config.php';
             self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
                 Ar::import($comonConfigFile, true),
-                Ar::import(AR_MAN_PATH . 'Conf' . DS . 'public.config.php')
+                Ar::import(MAN_PATH . 'Conf' . DS . 'public.config.php')
             );
-        elseif (AR_AS_WEB) :
+        elseif (AS_WEB) :
             // 目录生成
-            Ar::c('url.skeleton')->generate();
+            self::c('url.skeleton')->generate();
             // 公共配置
-            if (!is_file(AR_PUBLIC_CONFIG_PATH . 'public.config.php') && !is_file(AR_PUBLIC_CONFIG_PATH . 'public.config.ini')) :
-                echo 'config file not found : ' . AR_PUBLIC_CONFIG_PATH . 'public.config.php or ' . AR_PUBLIC_CONFIG_PATH . 'public.config.ini';
+            if (!is_file(PUBLIC_CONFIG_PATH . 'public.config.php') && !is_file(PUBLIC_CONFIG_PATH . 'public.config.ini')) :
+                echo 'config file not found : ' . PUBLIC_CONFIG_PATH . 'public.config.php or ' . PUBLIC_CONFIG_PATH . 'public.config.ini';
                 exit;
             endif;
-            self::setConfig('', Ar::import(AR_PUBLIC_CONFIG_PATH . 'public.config.php', true));
+            self::setConfig('', Ju::import(PUBLIC_CONFIG_PATH . 'public.config.php', true));
             // 加载ini
-            $iniConfigFile = AR_PUBLIC_CONFIG_PATH . 'public.config.ini';
-            $iniConfig = Ar::import($iniConfigFile, true);
+            $iniConfigFile = PUBLIC_CONFIG_PATH . 'public.config.ini';
+            $iniConfig = Ju::import($iniConfigFile, true);
             if (!empty($iniConfig)) :
-                Ar::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct(Ar::getConfig(), $iniConfig));
+                Ju::setConfig('', Comp('format.format')->arrayMergeRecursiveDistinct(Ju::getConfig(), $iniConfig));
             endif;
 
             // 引入新配置文件
-            if (AR_PUBLIC_CONFIG_FILE && is_file(AR_PUBLIC_CONFIG_FILE)) :
-                $otherConfig = include_once AR_PUBLIC_CONFIG_FILE;
+            if (PUBLIC_CONFIG_FILE && is_file(PUBLIC_CONFIG_FILE)) :
+                $otherConfig = include_once PUBLIC_CONFIG_FILE;
                 if (is_array($otherConfig)) :
-                    Ar::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct($otherConfig, Ar::getConfig()));
+                    Ju::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct($otherConfig, Ju::getConfig()));
                 endif;
             endif;
 
             // 路由解析
-            Ar::c('url.route')->parse();
+            Ju::c('url.route')->parse();
             // 子项目目录
-            defined('AR_APP_PATH') or define('AR_APP_PATH', AR_ROOT_PATH . (arCfg('requestRoute.a_m') ? arCfg('requestRoute.a_m') . DS : (AR_DEFAULT_APP_NAME ? AR_DEFAULT_APP_NAME . DS : '')));
+            defined('APP_PATH') or define('APP_PATH', ROOT_PATH . (Cfg('requestRoute.a_m') ? Cfg('requestRoute.a_m') . DS : (DEFAULT_APP_NAME ? DEFAULT_APP_NAME . DS : '')));
             // app 配置目录
-            defined('AR_APP_CONFIG_PATH') or define('AR_APP_CONFIG_PATH', AR_APP_PATH . 'Conf' . DS);
+            defined('APP_CONFIG_PATH') or define('APP_CONFIG_PATH', APP_PATH . 'Conf' . DS);
             // 模板目录
-            defined('AR_APP_VIEW_PATH') or define('AR_APP_VIEW_PATH', AR_APP_PATH . 'View' . DS);
+            defined('APP_VIEW_PATH') or define('APP_VIEW_PATH', APP_PATH . 'View' . DS);
             // app 控制器目录
-            defined('AR_APP_CONTROLLER_PATH') or define('AR_APP_CONTROLLER_PATH', AR_APP_PATH . 'Controller' . DS);
+            defined('APP_CONTROLLER_PATH') or define('APP_CONTROLLER_PATH', APP_PATH . 'Controller' . DS);
         // 命令行模式
-        elseif (AR_AS_CMD) :
+        elseif (AS_CMD) :
             // 目录生成
-            Ar::c('url.skeleton')->generateCmdFile();
-            self::$_config = Ar::import(AR_CMD_PATH . 'Conf' . DS . 'app.config.ini');
+            Ju::c('url.skeleton')->generateCmdFile();
+            self::$_config = Ju::import(CMD_PATH . 'Conf' . DS . 'app.config.ini');
             self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
-                Ar::import(AR_CMD_PATH . 'Conf' . DS . 'app.config.ini'),
-                Ar::import(AR_CMD_PATH . 'Conf' . DS . 'app.config.php', true)
+                Ju::import(CMD_PATH . 'Conf' . DS . 'app.config.ini'),
+                Ju::import(CMD_PATH . 'Conf' . DS . 'app.config.php', true)
             );
         endif;
 
-        self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
-            Ar::import(AR_CONFIG_PATH . 'default.config.php', true),
+        self::$_config = Comp('format.format')->arrayMergeRecursiveDistinct(
+            Ju::import(CONFIG_PATH . 'default.config.php', true),
             self::$_config
         );
 
@@ -237,17 +236,9 @@ class Ju{
 
     }
 
-    /**
-     * set component.
-     *
-     * @param string $component component name.
-     * @param array  $config    component config.
-     *
-     * @return void
-     */
-    static public function setC($component, array $config = array())
-    {
-        $cKey = strtolower($component);
+    
+    static public function setC($component, array $config = array()){
+        $cKey = strtolower($component); 
 
         if (isset(self::$_c[$cKey])) :
             return false;
@@ -259,7 +250,7 @@ class Ju{
 
         $cArr = array_map('ucfirst', $cArr);
 
-        $className = 'Ar' . array_pop($cArr);
+        $className = array_pop($cArr);
 
         $cArr[] = $className;
 
@@ -269,21 +260,14 @@ class Ju{
 
     }
 
-    /**
-     * autoload register.
-     *
-     * @param string $class class.
-     *
-     * @return mixed
-     */
-    static public function autoLoader($class)
-    {
+    
+    static public function autoLoader($class){
         $class = str_replace('\\', DS, $class);
 
-        if (AR_OUTER_START) :
-            $appModule = AR_MAN_PATH;
+        if (OUTER_START) :
+            $appModule = MAN_PATH;
         else :
-            $appModule = AR_ROOT_PATH . DS . arCfg('requestRoute.a_m', AR_DEFAULT_APP_NAME) . DS;
+            $appModule = ROOT_PATH . DS . Cfg('requestRoute.a_m', DEFAULT_APP_NAME) . DS;
         endif;
 
         array_push(self::$autoLoadPath, $appModule);
@@ -308,7 +292,7 @@ class Ju{
 
         if (empty($rt)) :
             // 外部调用时其他框架还有其他处理 此处就忽略
-            if (AR_AS_OUTER_FRAME || AR_OUTER_START) :
+            if (AS_OUTER_FRAME || OUTER_START) :
                 return false;
             else :
                 trigger_error('class : ' . $class . ' does not exist !', E_USER_ERROR);
@@ -318,13 +302,7 @@ class Ju{
 
     }
 
-    /**
-     * set autoLoad path.
-     *
-     * @param string $path path.
-     *
-     * @return void
-     */
+    
     static public function importPath($path)
     {
         // array_push(self::$autoLoadPath, rtrim($path, DS) . DS);
@@ -332,20 +310,12 @@ class Ju{
 
     }
 
-    /**
-     * import file or path.
-     *
-     * @param string  $path     import path.
-     * @param boolean $allowTry allow test exist.
-     *
-     * @return mixed
-     */
-    static public function import($path, $allowTry = false)
-    {
+    
+    static public function import($path, $allowTry = false){
         static $holdFile = array();
 
         if (strpos($path, DS) === false) :
-            $fileName = str_replace(array('c.', 'ext.', 'app.', '.'), array('Controller.', 'Extensions.', rtrim(AR_ROOT_PATH, DS) . '.', DS), $path) . '.class.php';
+            $fileName = str_replace(array('c.', 'ext.', 'app.', '.'), array('Controller.', 'Extensions.', rtrim(ROOT_PATH, DS) . '.', DS), $path) . '.class.php';
         else :
             $fileName = $path;
         endif;
@@ -386,17 +356,17 @@ class Ju{
     static public function exceptionHandler($e)
     {
         if (get_class($e) === 'ArServiceException') :
-            arComp('rpc.service')->response(array('error_code' => '1001', 'error_msg' => $e->getMessage()));
+            Comp('rpc.service')->response(array('error_code' => '1001', 'error_msg' => $e->getMessage()));
             exit;
         endif;
 
-        if (AR_DEBUG && !AR_AS_CMD) :
+        if (DEBUG && !AS_CMD) :
             $msg = '<b style="color:#ec8186;">' . get_class($e) . '</b> : ' . $e->getMessage();
-            if (arCfg('DEBUG_SHOW_TRACE')) :
-                arComp('ext.out')->deBug($msg, 'TRACE');
+            if (Cfg('DEBUG_SHOW_TRACE')) :
+                Comp('ext.out')->deBug($msg, 'TRACE');
             else :
-                if (arCfg('DEBUG_SHOW_EXCEPTION')) :
-                    arComp('ext.out')->deBug($msg, 'EXCEPTION');
+                if (Cfg('DEBUG_SHOW_EXCEPTION')) :
+                    Comp('ext.out')->deBug($msg, 'EXCEPTION');
                 endif;
             endif;
         endif;
@@ -415,12 +385,12 @@ class Ju{
      */
     static public function errorHandler($errno, $errstr, $errfile, $errline)
     {
-        if (AR_RUN_AS_SERVICE_HTTP) :
+        if (RUN_AS_SERVICE_HTTP) :
             arComp('rpc.service')->response(array('error_code' => '1011', 'error_msg' => $errstr));
             exit;
         endif;
 
-        if (!AR_DEBUG || !(error_reporting() & $errno)) :
+        if (!IS_DEBUG || !(error_reporting() & $errno)) :
             return;
         endif;
 
@@ -452,14 +422,14 @@ class Ju{
             break;
         }
         if ($errMsg) :
-            if (arCfg('DEBUG_SHOW_TRACE')) :
-                arComp('ext.out')->deBug($errMsg, 'TRACE');
+            if (Cfg('DEBUG_SHOW_TRACE')) :
+                Comp('ext.out')->deBug($errMsg, 'TRACE');
             else :
-                if (arCfg('DEBUG_SHOW_ERROR')) :
+                if (Cfg('DEBUG_SHOW_ERROR')) :
                     if ($serverError === true) :
-                        arComp('ext.out')->deBug($errMsg, 'SERVER_ERROR');
+                        Comp('ext.out')->deBug($errMsg, 'SERVER_ERROR');
                     else :
-                        arComp('ext.out')->deBug($errMsg, 'ERROR');
+                        Comp('ext.out')->deBug($errMsg, 'ERROR');
                     endif;
                 endif;
             endif;
@@ -476,22 +446,22 @@ class Ju{
      */
     public static function shutDown()
     {
-        if (AR_RUN_AS_SERVICE_HTTP) :
+        if (RUN_AS_SERVICE_HTTP) :
             return;
         endif;
 
-        if (AR_DEBUG && !AR_AS_CMD) :
-            if (arCfg('DEBUG_SHOW_EXCEPTION')) :
+        if (IS_DEBUG && !AS_CMD) :
+            if (Cfg('DEBUG_SHOW_EXCEPTION')) :
                 arComp('ext.out')->deBug('', 'EXCEPTION', true);
             endif;
 
-            if (arCfg('DEBUG_SHOW_ERROR')) :
-                arComp('ext.out')->deBug('', 'ERROR', true);
-                arComp('ext.out')->deBug('', 'SERVER_ERROR', true);
+            if (Cfg('DEBUG_SHOW_ERROR')) :
+                Comp('ext.out')->deBug('', 'ERROR', true);
+                Comp('ext.out')->deBug('', 'SERVER_ERROR', true);
             endif;
 
-            if (arCfg('DEBUG_SHOW_TRACE'))  :
-                arComp('ext.out')->deBug('[SHUTDOWN]', 'TRACE', true);
+            if (Cfg('DEBUG_SHOW_TRACE'))  :
+                Comp('ext.out')->deBug('[SHUTDOWN]', 'TRACE', true);
             endif;
 
         endif;

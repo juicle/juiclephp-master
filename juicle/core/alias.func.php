@@ -9,40 +9,22 @@ function Comp($name = ''){
     return Ju::c($name);
 }
 
-function Cfg($name = '', $default = 'NOT_RGI')
-{
-    if ($default === 'NOT_RGI') :
-        return Ar::getConfig($name);
-    else :
-        return Ar::getConfig($name, $default);
-    endif;
+function Cfg($name = '', $default = 'NOT_RGI'){
+    if ($default === 'NOT_RGI'){
+        return Ju::getConfig($name);
+    }else{
+        return Ju::getConfig($name, $default);
+   }
 
 }
 
-/**
- * route holder.
- *
- * @param string $name    route path.
- * @param mixed  $params  route param.
- * @param string $urlMode url mode.
- *
- * @return string
- */
-function arU($name = '', $params = array(), $urlMode = 'NOT_INIT')
-{
-    return arComp('url.route')->createUrl($name, $params, $urlMode);
 
+
+function U($name = '', $params = array(), $urlMode = 'NOT_INIT'){
+    return Comp('url.route')->createUrl($name, $params, $urlMode);
 }
 
-/**
- * arModule.
- *
- * @param string $name moduleName.
- *
- * @return Module
- */
-function arModule($name = '')
-{
+function Module($name = ''){
     static $moduleList = array();
     $module = $name . 'Module';
     if (!array_key_exists($module, $moduleList)) :
@@ -52,7 +34,7 @@ function arModule($name = '')
             call_user_func_array(array($moduleList[$module], 'initModule'), array());
         endif;
     endif;
-    if (AR_DEBUG && !AR_AS_CMD) :
+    if (DEBUG && !AS_CMD) :
         arComp('ext.out')->deBug('|MODULE_EXEC:' . $module .'|');
     endif;
     return $moduleList[$module];
@@ -165,7 +147,7 @@ function arRequest($key = '', $default = null, $addArray = array())
  */
 function arLm($module)
 {
-    return Ar::importPath(AR_ROOT_PATH . str_replace('.', DS, $module));
+    return Ar::importPath(ROOT_PATH . str_replace('.', DS, $module));
 
 }
 

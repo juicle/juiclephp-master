@@ -14,7 +14,7 @@ defined('OUTER_START') or define('OUTER_START', false);
 defined('AUTO_START_SESSION') or define('AUTO_START_SESSION', true);
 // 作为外部框架加载 可嵌入其他框架
 defined('AS_OUTER_FRAME') or define('AS_OUTER_FRAME', false);
-// 内部实现http webservice 多套 arphp程序互调接口
+// 内部实现http webservice 多套 程序互调接口
 defined('RUN_AS_SERVICE_HTTP') or define('RUN_AS_SERVICE_HTTP', false);
 // 实现 cmd socket 编程
 defined('AS_CMD') or define('AS_CMD', false);
@@ -57,10 +57,10 @@ if(OUTER_START){
 }else if(AS_CMD){
     defined('CMD_PATH') or define('CMD_PATH', ROOT_PATH . DEFAULT_APP_NAME . DS);
 }else{
-    set_exception_handler('init::exceptionHandler');
-    set_error_handler('Ainitr::errorHandler');
-    register_shutdown_function('init::shutDown');
+    set_exception_handler('Ju::exceptionHandler');
+    set_error_handler('Ju::errorHandler');
+    register_shutdown_function('Ju::shutDown');
 }
 
 //装载
-Ar::init();
+Ju::init();

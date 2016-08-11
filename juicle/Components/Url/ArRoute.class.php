@@ -5,8 +5,7 @@ declare(strict_types = 1);
  * PHP version 7
  * @link   http://php.juicler.com
  */
-class Route extends Component
-{
+class Route extends Component{
 
     public function serverPath($dir, $showServerName = false):string{
         $dir = str_replace(DS, '/', $dir);
