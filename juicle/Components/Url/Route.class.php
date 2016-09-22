@@ -61,7 +61,7 @@ class Route extends Component{
         }else{
             $virtualModule = substr($absolutePath, 0, strpos($absolutePath, '/'));
         }
-        if (!in_array($virtualModule, arCfg('moduleLists'))){
+        if (!in_array($virtualModule, Cfg('moduleLists'))){
             $virtualModule = DEFAULT_APP_NAME;
         }
         // 预加载config
@@ -69,23 +69,23 @@ class Route extends Component{
         // ini
         $iniConfigFile = ROOT_PATH . $virtualModule . DS . 'Conf' . DS . 'app.config.ini';
         // 项目配置
-        $appConfig = Ar::import($appConfigFile, true);
-        $iniConfig = Ar::import($iniConfigFile, true);
+        $appConfig = Ju::import($appConfigFile, true);
+        $iniConfig = Ju::import($iniConfigFile, true);
 
         if (!empty($iniConfig)) :
-            Ar::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct(Ar::getConfig(), $iniConfig));
+            Ju::setConfig('', Comp('format.format')->arrayMergeRecursiveDistinct(Ar::getConfig(), $iniConfig));
         endif;
 
         if (!empty($appConfig)) :
-            Ar::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct(Ar::getConfig(), $appConfig));
+            Ju::setConfig('', Comp('format.format')->arrayMergeRecursiveDistinct(Ar::getConfig(), $appConfig));
         endif;
-        $urlRouteRules = arCfg('URL_ROUTE_RULES');
+        $urlRouteRules = Cfg('URL_ROUTE_RULES');
         if (is_array($urlRouteRules)) :
             foreach ($urlRouteRules as $key => $rules) :
                 if (is_array($rules['mode'])) :
                     foreach ($rules['mode'] as $mode) :
                         if ($mode === $absolutePath) :
-                            $url = AR_SERVER_PATH . $key;
+                            $url = SERVER_PATH . $key;
                             $foundMode = true;
                             break 2;
                         endif;
@@ -107,7 +107,7 @@ class Route extends Component{
                         endif;
                     endforeach;
                 else :
-                    throw new ArException('URL_ROUTE_RULES : "' . $key . '" mode should be an Array', 1006);
+                    throw new BaseException('URL_ROUTE_RULES : "' . $key . '" mode should be an Array', 1006);
                 endif;
             endforeach;
         endif;
@@ -137,7 +137,7 @@ class Route extends Component{
         $requestUrl = trim($requestUrl, '/');
         $pathArr = explode('/', $requestUrl);
         $temp = array_shift($pathArr);
-        $m = in_array($temp, Ar::getConfig('moduleLists', array())) ? $temp : AR_DEFAULT_APP_NAME;
+        $m = in_array($temp, Ar::getConfig('moduleLists', array())) ? $temp : DEFAULT_APP_NAME;
         $c = in_array($temp, Ar::getConfig('moduleLists', array())) ? array_shift($pathArr) : $temp;
         $a = array_shift($pathArr);
         while ($gkey = array_shift($pathArr)) :
@@ -169,7 +169,7 @@ class Route extends Component{
                 $a_h = $serverHostArray[0];
             endif;
         endif;
-        $requestRoute = array('a_h' => $a_h, 'a_m' => $m, 'a_c' => empty($c) ? AR_DEFAULT_CONTROLLER : $c, 'a_a' => empty($a) ? AR_DEFAULT_ACTION : $a);
+        $requestRoute = array('a_h' => $a_h, 'a_m' => $m, 'a_c' => empty($c) ? DEFAULT_CONTROLLER : $c, 'a_a' => empty($a) ? DEFAULT_ACTION : $a);
         Ar::setConfig('requestRoute', $requestRoute);
         return $requestRoute;
 
@@ -221,19 +221,19 @@ class Route extends Component{
         // 路由url
         $url = $urlKey;
         // 路由规则
-        $urlRouteRules = arCfg('URL_ROUTE_RULES');
-        $defaultModule = arCfg('requestRoute.a_m') == AR_DEFAULT_APP_NAME ? '' : arCfg('requestRoute.a_m');
+        $urlRouteRules = Cfg('URL_ROUTE_RULES');
+        $defaultModule = Cfg('requestRoute.a_m') == DEFAULT_APP_NAME ? '' : Cfg('requestRoute.a_m');
         if ($urlMode === 'NOT_INIT') :
-            $urlMode = arCfg('URL_MODE', 'PATH');
+            $urlMode = Cfg('URL_MODE', 'PATH');
         endif;
-        $prefix = rtrim(AR_SERVER_PATH . $defaultModule, '/');
-        $urlParam = arCfg('requestRoute');
+        $prefix = rtrim(SERVER_PATH . $defaultModule, '/');
+        $urlParam = Cfg('requestRoute');
         $urlParam['a_m'] = $defaultModule;
 
         if (isset($params['greedyUrl']) && $params['greedyUrl'] === false) :
             // do nothing
         else :
-            if ((isset($params['greedyUrl']) && $params['greedyUrl'] === true) || arCfg('URL_GREEDY') === true) :
+            if ((isset($params['greedyUrl']) && $params['greedyUrl'] === true) || Cfg('URL_GREEDY') === true) :
                 unset($params['greedyUrl']);
                 unset($_GET['a_m']);
                 unset($_GET['a_c']);
@@ -249,14 +249,14 @@ class Route extends Component{
             endif;
         endif;
         // 跳转回来
-        if (isset($params['ar_back']) && $params['ar_back'] === true) :
-            unset($params['ar_back']);
-            arComp('list.session')->set('ar_back_url', $_SERVER['REQUEST_URI']);
+        if (isset($params['back']) && $params['back'] === true) :
+            unset($params['back']);
+            Comp('list.session')->set('back_url', $_SERVER['REQUEST_URI']);
         endif;
         if (empty($url)) :
             if ($urlMode == 'PATH') :
-                $controller = arCfg('requestRoute.a_c');
-                $action = arCfg('requestRoute.a_a');
+                $controller = Cfg('requestRoute.a_c');
+                $action = Cfg('requestRoute.a_a');
                 $url .= '/' . $controller . '/' . $action;
                 // 后续匹配
                 $urlKey = trim($url, '/');
@@ -280,7 +280,7 @@ class Route extends Component{
                 if ($urlMode != 'PATH') :
                     $urlParam['a_a'] = $url;
                 else :
-                    $url = $prefix . '/' . arCfg('requestRoute.a_c') . '/' . $url;
+                    $url = $prefix . '/' . Cfg('requestRoute.a_c') . '/' . $url;
                 endif;
             elseif (strpos($url, '/') === 0) :
                 if ($urlMode != 'PATH') :
@@ -290,7 +290,7 @@ class Route extends Component{
                     $urlParam['a_a'] = isset($eP[2]) ? $eP[2] : null;
                 else :
                     $url = ltrim($url, '/');
-                    $url = AR_SERVER_PATH . $url;
+                    $url = SERVER_PATH . $url;
                 endif;
             else :
                 if ($urlMode != 'PATH') :
@@ -316,7 +316,7 @@ class Route extends Component{
 
         case 'PATH' :
             if (strpos($urlKey, '/') === false) :
-                $urlKey = arCfg('requestRoute.a_c') . '/' . $urlKey;
+                $urlKey = Cfg('requestRoute.a_c') . '/' . $urlKey;
             endif;
             // 路由解析
             if (array_key_exists($urlKey, $urlRouteRules)) :
@@ -369,10 +369,10 @@ class Route extends Component{
             endforeach;
             break;
         case 'QUERY' :
-            $url = arComp('url.route')->host() . '?' . http_build_query($urlParam);
+            $url = Comp('url.route')->host() . '?' . http_build_query($urlParam);
             break;
         case 'FULL' :
-            $url = arComp('url.route')->host(true) . '?' . http_build_query($urlParam);
+            $url = Comp('url.route')->host(true) . '?' . http_build_query($urlParam);
             break;
         }
         return $url;
@@ -385,13 +385,13 @@ class Route extends Component{
         if(is_string($r)){
             $url = '';
             if (empty($r)){
-                $urlTemp = arComp('list.session')->get('ar_back_url');
+                $urlTemp = Comp('list.session')->get('back_url');
                 if ($urlTemp) {
                     $url = $urlTemp;
-                    arComp('list.session')->set('ar_back_url', null);
+                    Comp('list.session')->set('back_url', null);
                 }
             }else{
-                if ($r == 'ar_up') {
+                if ($r == 'up') {
                     if (!empty($_SERVER['HTTP_REFERER'])){
                         $url = $_SERVER['HTTP_REFERER'];
                     }
@@ -405,7 +405,7 @@ class Route extends Component{
             $route = empty($r[0]) ? '' : $r[0];
             $param = empty($r[1]) ? array() : $r[1];
 
-            $url = arComp('url.route')->createUrl($route, $param);
+            $url = Comp('url.route')->createUrl($route, $param);
         }
         // search seg if found then render
         $redirectUrl = <<<str

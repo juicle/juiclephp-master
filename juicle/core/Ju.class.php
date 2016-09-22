@@ -15,15 +15,11 @@ class Ju{
     
     static public $autoLoadPath;
 
-    /**
-     * init application.
-     *
-     * @return mixed
-     */
+    
     static public function init(){
-        if (!IS_DEBUG) :
+        if (!IS_DEBUG){
             error_reporting(0);
-        endif;
+        }
 
         self::import(CORE_PATH . 'alias.func.php');
 
@@ -52,7 +48,7 @@ class Ju{
         if (OUTER_START) :
             self::c('url.skeleton')->generateIntoOther();
             $comonConfigFile = realpath(dirname(MAN_PATH)) . DS . 'Conf' . DS . 'public.config.php';
-            self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
+            self::$_config = Comp('format.format')->arrayMergeRecursiveDistinct(
                 Ar::import($comonConfigFile, true),
                 Ar::import(MAN_PATH . 'Conf' . DS . 'public.config.php')
             );
@@ -76,7 +72,7 @@ class Ju{
             if (PUBLIC_CONFIG_FILE && is_file(PUBLIC_CONFIG_FILE)) :
                 $otherConfig = include_once PUBLIC_CONFIG_FILE;
                 if (is_array($otherConfig)) :
-                    Ju::setConfig('', arComp('format.format')->arrayMergeRecursiveDistinct($otherConfig, Ju::getConfig()));
+                    Ju::setConfig('', Comp('format.format')->arrayMergeRecursiveDistinct($otherConfig, Ju::getConfig()));
                 endif;
             endif;
 
@@ -95,7 +91,7 @@ class Ju{
             // 目录生成
             Ju::c('url.skeleton')->generateCmdFile();
             self::$_config = Ju::import(CMD_PATH . 'Conf' . DS . 'app.config.ini');
-            self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
+            self::$_config = Comp('format.format')->arrayMergeRecursiveDistinct(
                 Ju::import(CMD_PATH . 'Conf' . DS . 'app.config.ini'),
                 Ju::import(CMD_PATH . 'Conf' . DS . 'app.config.php', true)
             );
@@ -106,7 +102,7 @@ class Ju{
             self::$_config
         );
 
-        ArApp::run();
+        App::run();
 
     }
 
@@ -192,7 +188,7 @@ class Ju{
                         $nowArr[$cE[$i]] = $tem;
                     endif;
                 endfor;
-                self::$_config = arComp('format.format')->arrayMergeRecursiveDistinct(
+                self::$_config = Comp('format.format')->arrayMergeRecursiveDistinct(
                     self::$_config,
                     $nowArr
                 );
@@ -386,7 +382,7 @@ class Ju{
     static public function errorHandler($errno, $errstr, $errfile, $errline)
     {
         if (RUN_AS_SERVICE_HTTP) :
-            arComp('rpc.service')->response(array('error_code' => '1011', 'error_msg' => $errstr));
+            Comp('rpc.service')->response(array('error_code' => '1011', 'error_msg' => $errstr));
             exit;
         endif;
 
@@ -452,7 +448,7 @@ class Ju{
 
         if (IS_DEBUG && !AS_CMD) :
             if (Cfg('DEBUG_SHOW_EXCEPTION')) :
-                arComp('ext.out')->deBug('', 'EXCEPTION', true);
+                Comp('ext.out')->deBug('', 'EXCEPTION', true);
             endif;
 
             if (Cfg('DEBUG_SHOW_ERROR')) :
