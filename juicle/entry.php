@@ -7,7 +7,7 @@
 // 启动时间
 defined('START_TIME') or define('START_TIME', microtime(true));
 // 开启调试 是
-defined('IS_DEBUG') or define('IS_DEBUG', false);
+defined('IS_DEBUG') or define('IS_DEBUG', true);
 // 外部启动 否 默认管理目录Man
 defined('OUTER_START') or define('OUTER_START', false);
 // 自启动session
@@ -52,7 +52,7 @@ require_once CORE_PATH . 'Ju.class.php';
 spl_autoload_register('Ju::autoLoader');
 
 if(OUTER_START){
-    defined('MAN_NAME') or define('MAN_NAME', 'Arman');
+    defined('MAN_NAME') or define('MAN_NAME', 'man');
     defined('MAN_PATH') or define('MAN_PATH', ROOT_PATH . MAN_NAME . DS);
 }else if(AS_CMD){
     defined('CMD_PATH') or define('CMD_PATH', ROOT_PATH . DEFAULT_APP_NAME . DS);
