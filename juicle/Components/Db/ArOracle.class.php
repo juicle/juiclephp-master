@@ -1,10 +1,35 @@
 <?php
 /**
- * JuiclePHP
- * PHP version 7
- * @link   http://php.juicler.com
+ * ArPHP A Strong Performence PHP FrameWork ! You Should Have.
+ *
+ * PHP version 5
+ *
+ * @category PHP
+ * @package  Core.Component.Db
+ * @author   yc <ycassnr@gmail.com>
+ * @license  http://www.arphp.org/licence MIT Licence
+ * @version  GIT: 1: coding-standard-tutorial.xml,v 1.0 2014-5-01 18:16:25 cweiske Exp $
+ * @link     http://www.arphp.org
  */
-class Mysql extends Db
+
+/**
+ * mysql
+ *
+ * default hash comment :
+ *
+ * <code>
+ *  # This is a hash comment, which is prohibited.
+ *  $hello = 'hello';
+ * </code>
+ *
+ * @category ArPHP
+ * @package  Core.Components.Db
+ * @author   yc <ycassnr@gmail.com>
+ * @license  http://www.arphp.org/licence MIT Licence
+ * @version  Release: @package_version@
+ * @link     http://www.arphp.org
+ */
+class ArOracle extends ArDb
 {
     // driver
     // public $driverName = __CLASS__;
@@ -14,12 +39,6 @@ class Mysql extends Db
     public $lastInsertId = '';
     // guess
     public $allowGuessConditionOperator = true;
-
-    // cache
-    public $cacheEnabled;
-    public $cacheTime;
-    public $cacheType;
-
     // query options
     protected $options = array(
         'columns' => '*',
@@ -32,7 +51,6 @@ class Mysql extends Db
         'limit' => '',
         'union' => '',
         'comment' => '',
-        'source' => 'ArModel',
     );
 
     /**
@@ -82,18 +100,10 @@ class Mysql extends Db
         $this->flushOptions();
 
         try {
-            $connection = $this->getDbConnection();
-            $this->pdoStatement = $connection->query($sql);
-            // $i[] = $this->pdoStatement;
+            $this->pdoStatement = $this->getDbConnection()->query($sql);
+            $i[] = $this->pdoStatement;
         } catch (PDOException $e) {
-            // 重连
-            if ((strpos($e->getMessage(), 'Lost connection to MySQL server') !== false) || (strpos($e->getMessage(), 'server has gone away') !== false)) :
-                $connection = null;
-                $connection = $this->addConnection($this->connectionMark, true);
-                $this->pdoStatement = $connection->query($sql);
-            else :
-                throw new ArDbException($e->getMessage() . ' lastsql :' . $sql);
-            endif;
+            throw new ArDbException($e->getMessage() . ' lastsql :' . $sql);
         }
 
         $this->connectionMark = 'read.default';
@@ -141,7 +151,6 @@ class Mysql extends Db
      */
     public function getColumns()
     {
-        $connectionMark = $this->connectionMark;
         $table = $this->options['table'];
 
         $sql = 'show columns from ' . $table;
@@ -153,11 +162,10 @@ class Mysql extends Db
         foreach ($ret as $value) :
             $columns[] = $value['Field'];
         endforeach;
-        $this->connectionMark = $connectionMark;
+
         return $columns;
 
     }
-
     /**
      * count.
      *
@@ -165,11 +173,11 @@ class Mysql extends Db
      */
     public function count()
     {
-        $result = $this->select(array('COUNT(\'*\') as t'))->queryRow();
+        $result = $this->select(array('COUNT(\'*\') as T'))->queryAll();
         if (empty($result)) :
             $total = 0;
         else :
-            $total = (int)$result['t'];
+            $total = (int)$result[0]['T'];
         endif;
         return $total;
 
@@ -183,29 +191,7 @@ class Mysql extends Db
     public function queryRow()
     {
         $this->limit(1);
-        // sql
-        $sql = $this->buildSelectSql();
-        $this->flushOptions();
-
-        // 开启缓存检测
-        if ($this->cacheEnabled) :
-            $cacheKey = $this->cacheType . $sql;
-            $cacheResult = arComp('cache.' . $this->cacheType)->get($cacheKey);
-            if ($cacheResult !== null) :
-                $this->cacheEnabled = false;
-                return $cacheResult;
-            endif;
-        endif;
-
-        $result = $this->query($sql)->fetch(PDO::FETCH_ASSOC);
-
-        // 设置缓存
-        if ($this->cacheEnabled) :
-            $this->cacheEnabled = false;
-            $cacheKey = $this->cacheType . $sql;
-            arComp('cache.' . $this->cacheType)->set($cacheKey, $result, $this->cacheTime);
-        endif;
-        return $result;
+        return $this->query()->fetch(PDO::FETCH_ASSOC);
 
     }
 
@@ -234,22 +220,7 @@ class Mysql extends Db
      */
     public function queryAll($columnKey = '')
     {
-        // sql
-        $sql = $this->buildSelectSql();
-        $this->flushOptions();
-
-        // 开启缓存检测
-        if ($this->cacheEnabled) :
-            $cacheKey = $this->cacheType . $sql;
-            $cacheResult = arComp('cache.' . $this->cacheType)->get($cacheKey);
-            if ($cacheResult !== null) :
-                $this->cacheEnabled = false;
-                return $cacheResult;
-            endif;
-        endif;
-
-        // 查询数据
-        $result = $this->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $result = $this->query()->fetchAll(PDO::FETCH_ASSOC);
         if ($result && $columnKey) :
             $dataBox = array();
             foreach ($result as $row) :
@@ -259,31 +230,7 @@ class Mysql extends Db
             endforeach;
             $result = $dataBox;
         endif;
-
-        // 设置缓存
-        if ($this->cacheEnabled) :
-            $this->cacheEnabled = false;
-            $cacheKey = $this->cacheType . $sql;
-            arComp('cache.' . $this->cacheType)->set($cacheKey, $result, $this->cacheTime);
-        endif;
         return $result;
-
-    }
-
-    /**
-     * data cache.
-     *
-     * @param int    $time second.
-     * @param string $type cache type file memcached redis...
-     *
-     * @return mixed
-     */
-    public function cache($time = 0, $type = 'file')
-    {
-        $this->cacheEnabled = true;
-        $this->cacheTime = $time;
-        $this->cacheType = $type;
-        return $this;
 
     }
 
@@ -311,19 +258,13 @@ class Mysql extends Db
      */
     public function insert(array $data = array(), $checkData = false)
     {
-        if (empty($this->options['source'])) :
-            $this->options['source'] = 'ArModel';
-        endif;
         $options = $this->options;
+
         if (ArModel::model($this->options['source'])->insertCheck($data)) :
 
             $data = ArModel::model($this->options['source'])->formatData($data);
 
-
             if (!empty($data)) :
-
-                $this->options = $options;
-
                 if ($checkData) :
                     $data = arComp('format.format')->filterKey($this->getColumns(), $data);
                 endif;
@@ -336,39 +277,15 @@ class Mysql extends Db
             endif;
 
             $sql = $this->bulidInsertSql();
-            $rtstatus = $this->exec($sql);
-            $this->lastInsertId = $this->getDbConnection()->lastInsertId();
 
-            return $this->lastInsertId ? $this->lastInsertId : $rtstatus;
+            return $this->exec($sql);
+
+            // oracle not support
+            // $this->lastInsertId = $this->getDbConnection()->lastInsertId();
 
         endif;
 
         return false;
-
-    }
-
-    /**
-     * barch insert.
-     *
-     * @param array   $data data.
-     *
-     * @return mixed
-     */
-    public function batchInsert(array $data = array())
-    {
-        $options = $this->options;
-        // batch insert
-        $this->data($data, true);
-
-        $sql = $this->bulidInsertSql();
-
-        $this->options = $options;
-
-        $rtstatus = $this->exec($sql);
-
-        $this->lastInsertId = $this->getDbConnection()->lastInsertId();
-
-        return $this->lastInsertId ? $this->lastInsertId : $rtstatus;
 
     }
 
@@ -432,19 +349,12 @@ class Mysql extends Db
         try {
             $this->lastSql = $sql;
             $this->flushOptions();
-            $connection = $this->getDbConnection();
-            $rt = $connection->exec($sql);
+            $rt = $this->getDbConnection()->exec($sql);
+            $this->connectionMark = 'read.default';
+            return $rt;
         } catch (PDOException $e) {
-            if ((strpos($e->getMessage(), 'Lost connection to MySQL server') !== false) || (strpos($e->getMessage(), 'server has gone away') !== false)) :
-                $connection = null;
-                $connection = $this->addConnection($this->connectionMark, true);
-                $rt = $connection->exec($sql);
-            else :
-                throw new ArDbException($e->getMessage() . ' lastsql :' . $sql);
-            endif;
+            throw new ArDbException($e->getMessage() . ' lastsql :' . $sql);
         }
-        $this->connectionMark = 'read.default';
-        return $rt;
 
     }
 
@@ -464,7 +374,10 @@ class Mysql extends Db
             endforeach;
             return $return;
         else :
-            $data = $this->getDbConnection()->quote($data);
+            // 不过滤函数
+            if (!preg_match("#\(.+\)#", $data)) :
+                $data = $this->getDbConnection()->quote($data);
+            endif;
             if (false === $data) :
                 $data = "''";
             endif;
@@ -598,6 +511,7 @@ class Mysql extends Db
      */
     public function quoteObj($objName)
     {
+        return $objName;
         if (is_array($objName)) :
             $return = array();
             foreach ( $objName as $k => $v ) :
@@ -627,8 +541,6 @@ class Mysql extends Db
                     endforeach;
                     $v[$k_1] = implode('.', $v_1);
                 elseif (preg_match('#\(.+\)#', $v_1)) :
-                    $v[$k_1] = $v_1;
-                elseif ($v_1 === '*') :
                     $v[$k_1] = $v_1;
                 else :
                     $v[$k_1] = '`'.$v_1.'`';
@@ -672,15 +584,22 @@ class Mysql extends Db
     /**
      * where.
      *
-     * @param mixed  $conditions cond.
-     * @param string $logic      or | and.
+     * @param mixed $conditions cond.
      *
      * @return mixed
      */
-    public function where($conditions = '', $logic = 'AND')
+    public function where($conditions = '')
     {
-        $conStr = $this->buildCondition($conditions, $logic);
-        $this->options['where'] = empty($conStr) ? '' : ' WHERE ' . $conStr;
+        $conStr = $this->buildCondition($conditions);
+
+        if ($conStr) :
+            if ($this->options['where']) :
+                $this->options['where'] .= ' AND ( ' . $conStr . '  ) ';
+            else :
+                $this->options['where'] = ' WHERE ' . $conStr;
+            endif;
+        endif;
+
         return $this;
 
     }
@@ -709,7 +628,10 @@ class Mysql extends Db
      */
     public function limit($limit)
     {
-        $this->options['limit'] = empty($limit) ? '' : ' LIMIT ' . $limit;
+        if ($limit) :
+            $this->where(array('ROWNUM <=' => $limit));
+        endif;
+
         return $this;
 
     }
@@ -753,45 +675,21 @@ class Mysql extends Db
     /**
      * where.
      *
-     * @param array   $data  data.
-     * @param boolean $batch batch.
+     * @param array $data data.
      *
      * @return mixed
      */
-    public function data(array $data, $batch = false)
+    public function data(array $data)
     {
-        $values = $fields = array();
-
-        if (!$batch) :
-            foreach ($data as $key => $val) :
-                if(is_scalar($val) || is_null($val)) :
-                    $fields[] = $this->quoteObj($key);
-                    $values[] = $this->quote($val);
-                endif;
-            endforeach;
-            $this->options['data'] = '(' . implode($fields, ',') . ') VALUES (' . implode($values, ',') . ')';
-        else :
-            $fields =  array_keys($data[0]);
-            $valueString = '';
-            foreach ($data as $key => $value) :
-                $valueBundle = array();
-                foreach ($value as $val) :
-                    if(is_scalar($val) || is_null($val)) :
-                        $valueBundle[] = $this->quote($val);
-                    endif;
-                endforeach;
-
-                if ($valueString) :
-                    $valueString .= ',(' . implode($valueBundle, ',') . ')';
-                else :
-                    $valueString .= '(' . implode($valueBundle, ',') . ')';
-                endif;
-            endforeach;
-            $this->options['data'] = '(' . implode($fields, ',') . ') VALUES ' . $valueString;
-        endif;
-
+        $values  =  $fields    = array();
+        foreach ($data as $key => $val) :
+            if(is_scalar($val) || is_null($val)) :
+                $fields[] = $this->quoteObj($key);
+                $values[] = $this->quote($val);
+            endif;
+        endforeach;
+        $this->options['data'] = '(' . implode($fields, ',') . ') VALUES (' . implode($values, ',') . ')';
         return $this;
-
     }
 
     /**
@@ -810,9 +708,9 @@ class Mysql extends Db
                 if (!$count) :
                     throw new ArDbException('bad sql condition: must be a valid sql condition');
                 endif;
-                // $condition = explode($logic[0], $condition);
-                // $condition[0] = $this->quoteObj($condition[0]);
-                // $condition = implode($logic[0], $condition);
+                $condition = explode($logic[0], $condition);
+                $condition[0] = $this->quoteObj($condition[0]);
+                $condition = implode($logic[0], $condition);
                 return $condition;
             endif;
             throw new ArDbException('bad sql condition: ' . gettype($condition));
@@ -935,7 +833,7 @@ class Mysql extends Db
                     $this->options['union'],
                     $this->options['comment']
                 ),
-            'SELECT %COLUMNS% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%LIMIT% %UNION%%COMMENT%'
+            'SELECT %COLUMNS% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER% %UNION%%COMMENT%'
         );
 
         return $sql;

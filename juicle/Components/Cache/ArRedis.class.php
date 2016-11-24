@@ -1,20 +1,62 @@
 <?php
 /**
- * JuiclePHP
- * PHP version 7
- * @link   http://php.juicler.com
+ * ArPHP A Strong Performence PHP FrameWork ! You Should Have.
+ *
+ * PHP version 5
+ *
+ * @category PHP
+ * @package  Core.Components.Cache
+ * @author   yc <ycassnr@gmail.com>
+ * @license  http://www.arphp.org/licence MIT Licence
+ * @version  GIT: 1: coding-standard-tutorial.xml,v 1.0 2014-5-01 18:16:25 cweiske Exp $
+ * @link     http://www.arphp.org
  */
-class Redis extends Cache{
-    
-    static public function init($config = array(), $class = __CLASS__){
+
+/**
+ * class redis cache
+ *
+ * default hash comment :
+ *
+ * <code>
+ *  # This is a hash comment, which is prohibited.
+ *  $hello = 'hello';
+ * </code>
+ *
+ * @category ArPHP
+ * @package  Core.base
+ * @author   yc <ycassnr@gmail.com>
+ * @license  http://www.arphp.org/licence MIT Licence
+ * @version  Release: @package_version@
+ * @link     http://www.arphp.org
+ */
+class ArRedis extends ArCache
+{
+    // object redis
+    private $_redis = null;
+
+    /**
+     * initialization function.
+     *
+     * @param mixed  $config config.
+     * @param string $class  hold class.
+     *
+     * @return Object
+     */
+    static public function init($config = array(), $class = __CLASS__)
+    {
         $obj = parent::init($config, $class);
         $obj->connect();
         return $obj;
 
     }
 
- 
-    public function connect($reConnect = false){
+    /**
+     * redis connect.
+     *
+     * @return mixed
+     */
+    public function connect($reConnect = false)
+    {
         if (!$this->_redis || $reConnect) :
             $this->_redis = new Redis();
             if (isset($this->config['pconnect']) && $this->config['pconnect'] === true) :
@@ -36,8 +78,9 @@ class Redis extends Cache{
 
     }
 
-    
-    public function reConnect(){
+    // 断线重连
+    public function reConnect()
+    {
         $this->connect(true);
         sleep(1);
 
