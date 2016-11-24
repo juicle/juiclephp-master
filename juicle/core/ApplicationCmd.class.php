@@ -4,7 +4,7 @@
  * PHP version 7
  * @link   http://php.juicler.com
  */
-class ArApplicationCmd extends ArApplication
+class ApplicationCmd extends Application
 {
     // start
     public function start()
