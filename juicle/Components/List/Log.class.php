@@ -1,30 +1,10 @@
 <?php
 /**
- * ArPHP A Strong Performence PHP FrameWork ! You Should Have.
- *
- * PHP version 5
- *
- * @category PHP
- * @package  Core.Component.List
- * @author   yc <ycassnr@gmail.com>
- * @license  http://www.arphp.org/licence MIT Licence
- * @version  GIT: 1: coding-standard-tutorial.xml,v 1.0 2014-5-01 18:16:25 cweiske Exp $
- * @link     http://www.arphp.org
+ * JuiclePHP
+ * PHP version 7
+ * @link   http://php.juicler.com
  */
-
-/**
- * ArLog
- *
- * default hash comment :
- *
- * @category ArPHP
- * @package  Core.Component.List
- * @author   yc <ycassnr@gmail.com>
- * @license  http://www.arphp.org/licence MIT Licence
- * @version  Release: @package_version@
- * @link     http://www.arphp.org
- */
-class ArLog extends ArList
+class Log extends Lists
 {
     // cache path
     protected $logPath;
