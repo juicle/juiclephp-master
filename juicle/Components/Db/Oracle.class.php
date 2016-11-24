@@ -1,35 +1,10 @@
 <?php
 /**
- * ArPHP A Strong Performence PHP FrameWork ! You Should Have.
- *
- * PHP version 5
- *
- * @category PHP
- * @package  Core.Component.Db
- * @author   yc <ycassnr@gmail.com>
- * @license  http://www.arphp.org/licence MIT Licence
- * @version  GIT: 1: coding-standard-tutorial.xml,v 1.0 2014-5-01 18:16:25 cweiske Exp $
- * @link     http://www.arphp.org
+ * JuiclePHP
+ * PHP version 7
+ * @link   http://php.juicler.com
  */
-
-/**
- * mysql
- *
- * default hash comment :
- *
- * <code>
- *  # This is a hash comment, which is prohibited.
- *  $hello = 'hello';
- * </code>
- *
- * @category ArPHP
- * @package  Core.Components.Db
- * @author   yc <ycassnr@gmail.com>
- * @license  http://www.arphp.org/licence MIT Licence
- * @version  Release: @package_version@
- * @link     http://www.arphp.org
- */
-class ArMssql extends ArDb
+class Oracle extends Db
 {
     // driver
     // public $driverName = __CLASS__;
@@ -83,14 +58,11 @@ class ArMssql extends ArDb
      *
      * @return mixed
      */
-    public function query($sql = '')
+    protected function query($sql = '')
     {
         static $i = array();
-        $returnResult = false;
         if (empty($sql)) :
             $sql = $this->buildSelectSql();
-        else :
-            $returnResult = true;
         endif;
 
         $sqlCmd = strtoupper(substr($sql, 0, 6));
@@ -108,11 +80,42 @@ class ArMssql extends ArDb
         } catch (PDOException $e) {
             throw new ArDbException($e->getMessage() . ' lastsql :' . $sql);
         }
-        if ($returnResult) :
-            return $this->pdoStatement->fetchAll(PDO::FETCH_ASSOC);
-        endif;
+
+        $this->connectionMark = 'read.default';
 
         return $this->pdoStatement;
+
+    }
+
+    /**
+     * direct to exec sql.
+     *
+     * @param $sql string sql.
+     *
+     * @return mixed
+     */
+    public function sqlQuery($sql = '')
+    {
+        if (empty($sql)) :
+            throw new ArDbException("Query Sql String Should Not Be Empty");
+        endif;
+
+        $ret = $this->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+        return $ret;
+
+    }
+
+    /**
+     * direct to exec sql.
+     *
+     * @param $sql string sql.
+     *
+     * @return mixed
+     */
+    public function sqlExec($sql = '')
+    {
+        return $this->exec($sql);
 
     }
 
@@ -138,7 +141,6 @@ class ArMssql extends ArDb
         return $columns;
 
     }
-
     /**
      * count.
      *
@@ -146,11 +148,11 @@ class ArMssql extends ArDb
      */
     public function count()
     {
-        $result = $this->select(array('COUNT(\'*\') as t'))->queryRow();
+        $result = $this->select(array('COUNT(\'*\') as T'))->queryAll();
         if (empty($result)) :
             $total = 0;
         else :
-            $total = (int)$result['t'];
+            $total = (int)$result[0]['T'];
         endif;
         return $total;
 
@@ -250,9 +252,11 @@ class ArMssql extends ArDb
             endif;
 
             $sql = $this->bulidInsertSql();
-            $this->exec($sql);
 
-            return $this->lastInsertId = $this->getDbConnection()->lastInsertId();
+            return $this->exec($sql);
+
+            // oracle not support
+            // $this->lastInsertId = $this->getDbConnection()->lastInsertId();
 
         endif;
 
@@ -312,12 +316,17 @@ class ArMssql extends ArDb
      *
      * @return mixed
      */
-    protected function exec($sql)
+    protected function exec($sql = '')
     {
+        if (empty($sql)) :
+            throw new ArDbException("Exec Sql String Should Not Be Empty");
+        endif;
         try {
             $this->lastSql = $sql;
             $this->flushOptions();
-            return $this->getDbConnection()->exec($sql);
+            $rt = $this->getDbConnection()->exec($sql);
+            $this->connectionMark = 'read.default';
+            return $rt;
         } catch (PDOException $e) {
             throw new ArDbException($e->getMessage() . ' lastsql :' . $sql);
         }
@@ -340,7 +349,10 @@ class ArMssql extends ArDb
             endforeach;
             return $return;
         else :
-            $data = $this->getDbConnection()->quote($data);
+            // 不过滤函数
+            if (!preg_match("#\(.+\)#", $data)) :
+                $data = $this->getDbConnection()->quote($data);
+            endif;
             if (false === $data) :
                 $data = "''";
             endif;
@@ -554,7 +566,15 @@ class ArMssql extends ArDb
     public function where($conditions = '')
     {
         $conStr = $this->buildCondition($conditions);
-        $this->options['where'] = empty($conStr) ? '' : ' WHERE ' . $conStr;
+
+        if ($conStr) :
+            if ($this->options['where']) :
+                $this->options['where'] .= ' AND ( ' . $conStr . '  ) ';
+            else :
+                $this->options['where'] = ' WHERE ' . $conStr;
+            endif;
+        endif;
+
         return $this;
 
     }
@@ -575,7 +595,7 @@ class ArMssql extends ArDb
     }
 
     /**
-     * (top) limit just compare with mysql.
+     * limit.
      *
      * @param mixed $limit limit.
      *
@@ -583,7 +603,10 @@ class ArMssql extends ArDb
      */
     public function limit($limit)
     {
-        $this->options['limit'] = empty($limit) ? '' : ' TOP ' . $limit;
+        if ($limit) :
+            $this->where(array('ROWNUM <=' => $limit));
+        endif;
+
         return $this;
 
     }
@@ -785,7 +808,7 @@ class ArMssql extends ArDb
                     $this->options['union'],
                     $this->options['comment']
                 ),
-            'SELECT %LIMIT% %COLUMNS% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER%%UNION%%COMMENT%'
+            'SELECT %COLUMNS% FROM %TABLE%%JOIN%%WHERE%%GROUP%%HAVING%%ORDER% %UNION%%COMMENT%'
         );
 
         return $sql;
