@@ -310,35 +310,35 @@ class Ju{
     static public function import($path, $allowTry = false){
         static $holdFile = array();
 
-        if (strpos($path, DS) === false) :
+        if (strpos($path, DS) === false){
             $fileName = str_replace(array('c.', 'ext.', 'app.', '.'), array('Controller.', 'Extensions.', rtrim(ROOT_PATH, DS) . '.', DS), $path) . '.class.php';
-        else :
+        } else {
             $fileName = $path;
-        endif;
+        }
 
-        if (is_file($fileName)) :
-            if (substr($fileName, (strrpos($fileName, '.') + 1)) == 'ini') :
+        if (is_file($fileName)){
+            if (substr($fileName, (strrpos($fileName, '.') + 1)) == 'ini'){
                 $config = parse_ini_file($fileName, true);
-                if (empty($config)) :
+                if (empty($config)){
                     $config = array();
-                endif;
+                }
                 return $config;
-            else :
+            }else{
                 $file = include_once $fileName;
-                if ($file === true) :
+                if ($file === true){
                     return $holdFile[$fileName];
-                else :
+                }else{
                     $holdFile[$fileName] = $file;
                     return $file;
-                endif;
-            endif;
-        else :
-            if ($allowTry) :
+                }
+            }
+        }else{
+            if ($allowTry){
                 return array();
-            else :
+            } else {
                 throw new ArException('import not found file :' . $fileName);
-            endif;
-        endif;
+            }
+        }
 
     }
 
