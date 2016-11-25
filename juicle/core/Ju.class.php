@@ -49,8 +49,8 @@ class Ju{
             self::c('url.skeleton')->generateIntoOther();
             $comonConfigFile = realpath(dirname(MAN_PATH)) . DS . 'Conf' . DS . 'public.config.php';
             self::$_config = Comp('format.format')->arrayMergeRecursiveDistinct(
-                Ar::import($comonConfigFile, true),
-                Ar::import(MAN_PATH . 'Conf' . DS . 'public.config.php')
+                Ju::import($comonConfigFile, true),
+                Ju::import(MAN_PATH . 'Conf' . DS . 'public.config.php')
             );
         elseif (AS_WEB) :
             // 目录生成
@@ -336,7 +336,7 @@ class Ju{
             if ($allowTry){
                 return array();
             } else {
-                throw new ArException('import not found file :' . $fileName);
+                throw new Exception('import not found file :' . $fileName);
             }
         }
 
@@ -351,12 +351,12 @@ class Ju{
      */
     static public function exceptionHandler($e)
     {
-        if (get_class($e) === 'ArServiceException') :
+        if (get_class($e) === 'ServiceException') :
             Comp('rpc.service')->response(array('error_code' => '1001', 'error_msg' => $e->getMessage()));
             exit;
         endif;
 
-        if (DEBUG && !AS_CMD) :
+        if (IS_DEBUG && !AS_CMD) :
             $msg = '<b style="color:#ec8186;">' . get_class($e) . '</b> : ' . $e->getMessage();
             if (Cfg('DEBUG_SHOW_TRACE')) :
                 Comp('ext.out')->deBug($msg, 'TRACE');

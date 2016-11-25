@@ -79,8 +79,8 @@ class Controller{
         $footerFile = '';
 
         if ($this->layOutFile === 'NOT_INIT'){
-            $headerFile = AR_APP_VIEW_PATH . 'Layout' . DS . 'header' . '.' . Cfg('TPL_SUFFIX');
-            $footerFile = AR_APP_VIEW_PATH . 'Layout' . DS . 'footer' . '.' . Cfg('TPL_SUFFIX');
+            $headerFile = APP_VIEW_PATH . 'Layout' . DS . 'header' . '.' . Cfg('TPL_SUFFIX');
+            $footerFile = APP_VIEW_PATH . 'Layout' . DS . 'footer' . '.' . Cfg('TPL_SUFFIX');
         }else if ($this->layOutFile){
             $headerFile = $this->layOutFile . '_header' . '.' . Cfg('TPL_SUFFIX');
             $footerFile = $this->layOutFile . '_footer' . '.' . Cfg('TPL_SUFFIX');
@@ -92,7 +92,7 @@ class Controller{
                 $this->fetch($headerFile);
             else :
                 if ($this->layOutFile !== 'NOT_INIT') :
-                    throw new ArException("not fount layout header file : " . $headerFile, '2000');
+                    throw new Exception("not fount layout header file : " . $headerFile, '2000');
                 endif;
             endif;
         endif;
@@ -107,7 +107,7 @@ class Controller{
 
             else :
                 if ($this->layOutFile !== 'NOT_INIT') :
-                    throw new ArException("not fount layout footer file : " . $footerFile, '2000');
+                    throw new Exception("not fount layout footer file : " . $footerFile, '2000');
                 endif;
             endif;
         endif;
@@ -126,7 +126,7 @@ class Controller{
             $viewFile = $view;
         else :
             $viewPath = '';
-            $viewBasePath = arCfg('PATH.VIEW');
+            $viewBasePath = Cfg('PATH.VIEW');
             $overRide = false;
             $absolute = false;
 
@@ -135,7 +135,7 @@ class Controller{
                 $view = ltrim($view, '@');
             endif;
 
-            $r = Ar::a('ArApplicationWeb')->route;
+            $r = Ju::a('ApplicationWeb')->route;
 
             if (empty($view)) :
                 $viewPath .= $r['a_c'] . DS . $r['a_a'];
@@ -159,7 +159,7 @@ class Controller{
 
             if (!$absolute) :
                 while ($cP = get_parent_class($tempC)) :
-                    if (!in_array(substr($cP, 0, -10), array('Ar', 'Base'))) :
+                    if (!in_array(substr($cP, 0, -10), array('Ju', 'Base'))) :
                         $preFix = substr($cP, 0, -10) . DS . $preFix;
                         if (!$overRide && method_exists($cP, $r['a_a'] . 'Action')) :
                             $viewPath = str_replace(substr($tempC, 0, -10) . DS, '', $viewPath);
@@ -170,7 +170,7 @@ class Controller{
                     endif;
                 endwhile;
             endif;
-            $viewFile = $viewBasePath . $preFix . $viewPath . '.' . arCfg('TPL_SUFFIX');
+            $viewFile = $viewBasePath . $preFix . $viewPath . '.' . Cfg('TPL_SUFFIX');
         endif;
 
         if (is_file($viewFile)) :
@@ -185,7 +185,7 @@ class Controller{
                 include $viewFile;
             endif;
         else :
-            throw new ArException('view : ' . $viewFile . ' not found');
+            throw new Exception('view : ' . $viewFile . ' not found');
         endif;
 
     }

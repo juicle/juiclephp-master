@@ -114,7 +114,7 @@ class ArWorker
         // 用户配置和显示
         $this->socketName = strtolower(trim($socketName));
         $this->context = stream_context_create($contextOption);
-        $this->config = arCfg($socketName);
+        $this->config = Cfg($socketName);
 
     }
 
@@ -534,10 +534,10 @@ class ArWorker
     public function listen($ip = '', $port = '')
     {
         if (empty($ip)) :
-            $ip = arCfg($this->socketName . '.listen_ip', '0.0.0.0');
+            $ip = Cfg($this->socketName . '.listen_ip', '0.0.0.0');
         endif;
         if (empty($port)) :
-            $port = arCfg($this->socketName . '.listen_port');
+            $port = Cfg($this->socketName . '.listen_port');
         endif;
         if ($ip && $port) :
             $this->serverSocket = stream_socket_server('tcp://'. $ip . ':' . $port, $errno, $errstr);

@@ -88,21 +88,21 @@ class Out extends Component
                     'footer' => '</div>',
                 );
 
-            if (arCfg('DEBUG_SHOW_TRACE')) :
+            if (Cfg('DEBUG_SHOW_TRACE')) :
                 $showContentBox['trance'] = '<div style="background:#f8f8f8">RUN TIME : ' . (microtime(1) - AR_START_TIME) . 's</div>';
             endif;
 
-            if (arCfg('DEBUG_LOG')) :
-                arComp('list.log')->record($showContentBox, 'debug');
+            if (Cfg('DEBUG_LOG')) :
+                Comp('list.log')->record($showContentBox, 'debug');
                 switch ($tag) {
                     case 'EXCEPTION':
                         // $segFile = arCfg('DIR.SEG') . 'Redirect' . DS . '';
                         Header("HTTP/1.1 404 Not Found");
-                        arSeg(array('segKey' => 'Redirect/404'));
+                        Seg(array('segKey' => 'Redirect/404'));
                         break;
                     case 'SERVER_ERROR':
                         Header("HTTP/1.1 500 App Error");
-                        arSeg(array('segKey' => 'Redirect/500'));
+                        Seg(array('segKey' => 'Redirect/500'));
                         break;
                     default:
                         break;

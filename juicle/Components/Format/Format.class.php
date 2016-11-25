@@ -17,7 +17,7 @@ class Format extends Component
      */
     public function timeToDate($obj, $key = '', $forMat = 'm-d')
     {
-        if (Ar::c('validator.validator')->checkMutiArray($obj)) :
+        if (Ju::c('validator.validator')->checkMutiArray($obj)) :
             foreach ($obj as &$time) :
                 $time = $this->timeToDate($time, $key, $forMat);
             endforeach;
@@ -26,7 +26,7 @@ class Format extends Component
                 $obj[$key] = $this->timeToDate($obj[$key], '', $forMat);
             endif;
         else :
-            $obj = date($forMat, Ar::c('validator.validator')->checkNumber($obj) ? $obj : strtotime($obj));
+            $obj = date($forMat, Ju::c('validator.validator')->checkNumber($obj) ? $obj : strtotime($obj));
         endif;
 
         return $obj;
@@ -106,7 +106,7 @@ class Format extends Component
     public function encrypt($obj, $key = '')
     {
         if (is_array($obj)) :
-            if (Ar::c('validator.validator')->checkMutiArray($obj)) :
+            if (Ju::c('validator.validator')->checkMutiArray($obj)) :
                 foreach ($obj as &$eObj) :
                     $eObj = $this->encrypt($eObj, $key);
                 endforeach;
@@ -116,7 +116,7 @@ class Format extends Component
                 endif;
             endif;
         else :
-            $obj = Ar::c('hash.mcrypt')->encrypt($obj);
+            $obj = Ju::c('hash.mcrypt')->encrypt($obj);
         endif;
 
         return $obj;

@@ -145,7 +145,7 @@ function Seg($segment){
         $segKey = $segment['segKey'];
     }
     extract($segment);
-    $segFile = arCfg('DIR.SEG') . str_replace('/', DS, $segKey) . '.seg';
+    $segFile = Cfg('DIR.SEG') . str_replace('/', DS, $segKey) . '.seg';
     if (!is_file($segFile)){
         $segFile .= '.php';
         if (!is_file($segFile)){

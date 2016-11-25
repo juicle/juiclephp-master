@@ -137,8 +137,8 @@ class Route extends Component{
         $requestUrl = trim($requestUrl, '/');
         $pathArr = explode('/', $requestUrl);
         $temp = array_shift($pathArr);
-        $m = in_array($temp, Ar::getConfig('moduleLists', array())) ? $temp : DEFAULT_APP_NAME;
-        $c = in_array($temp, Ar::getConfig('moduleLists', array())) ? array_shift($pathArr) : $temp;
+        $m = in_array($temp, Ju::getConfig('moduleLists', array())) ? $temp : DEFAULT_APP_NAME;
+        $c = in_array($temp, Ju::getConfig('moduleLists', array())) ? array_shift($pathArr) : $temp;
         $a = array_shift($pathArr);
         while ($gkey = array_shift($pathArr)) :
             $_GET[$gkey] = array_shift($pathArr);
@@ -152,14 +152,14 @@ class Route extends Component{
             endforeach;
             $_GET = array_merge($_GET, $query);
         endif;
-        if (arGet('a_m')) :
-            $m = arGet('a_m');
+        if (Get('a_m')) :
+            $m = Get('a_m');
         endif;
-        if (arGet('a_c')) :
-            $c = arGet('a_c');
+        if (Get('a_c')) :
+            $c = Get('a_c');
         endif;
-        if (arGet('a_a')) :
-            $a = arGet('a_a');
+        if (Get('a_a')) :
+            $a = Get('a_a');
         endif;
         // 解析子域名 hostname
         $a_h = '';
@@ -170,7 +170,7 @@ class Route extends Component{
             endif;
         endif;
         $requestRoute = array('a_h' => $a_h, 'a_m' => $m, 'a_c' => empty($c) ? DEFAULT_CONTROLLER : $c, 'a_a' => empty($a) ? DEFAULT_ACTION : $a);
-        Ar::setConfig('requestRoute', $requestRoute);
+        Ju::setConfig('requestRoute', $requestRoute);
         return $requestRoute;
 
     }
