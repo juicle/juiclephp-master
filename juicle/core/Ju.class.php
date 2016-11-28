@@ -38,9 +38,9 @@ class Ju{
             COMP_PATH . 'Tools' . DS,
             COMP_PATH . 'Ext' . DS
         );
-        if (IS_DEBUG && !AS_CMD) :
+        if (IS_DEBUG && !AS_CMD){
             Comp('ext.out')->deBug('[START]');
-        endif;
+        }
         // 子项目目录
         defined('PUBLIC_CONFIG_PATH') or define('PUBLIC_CONFIG_PATH', ROOT_PATH . 'Conf' . DS);
 
@@ -124,39 +124,37 @@ class Ju{
     static public function getConfig($ckey = '', $defaultReturn = array()){
         $rt = array();
 
-        if (empty($ckey)) :
+        if (empty($ckey)){
             $rt = self::$_config;
-        else :
-            if (strpos($ckey, '.') === false) :
-                if (isset(self::$_config[$ckey])) :
+        }else{
+            if (strpos($ckey, '.') === false){
+                if (isset(self::$_config[$ckey])){
                     $rt = self::$_config[$ckey];
-                else :
-                    if (func_num_args() > 1) :
+                }else{
+                    if (func_num_args() > 1){
                         $rt = $defaultReturn;
-                    else :
+                    }else{
                         $rt = null;
-                    endif;
-                endif;
-            else :
+                    }
+                }
+            }else{
                 $cE = explode('.', $ckey);
                 $rt = self::$_config;
                 // 0 判断
-                while (($k = array_shift($cE)) || is_numeric($k)) :
-                    if (!isset($rt[$k])) :
-                        if (func_num_args() > 1) :
+                while (($k = array_shift($cE)) || is_numeric($k)){
+                    if (!isset($rt[$k])){
+                        if (func_num_args() > 1){
                             $rt = $defaultReturn;
-                        else :
+                        }else{
                             $rt = null;
-                        endif;
+                        }
                         break;
-                    else :
+                    }else{
                         $rt = $rt[$k];
-                    endif;
-                endwhile;
-            endif;
-
-        endif;
-
+                    }
+                }
+            }
+        }
         return $rt;
 
     }
@@ -171,31 +169,31 @@ class Ju{
      */
     static public function setConfig($ckey = '', $value = array())
     {
-        if (!empty($ckey)) :
-            if (strpos($ckey, '.') === false) :
+        if (!empty($ckey)){
+            if (strpos($ckey, '.') === false){
                 self::$_config[$ckey] = $value;
-            else :
+            }else{
                 $cE = explode('.', $ckey);
                 $rt = self::$_config;
                 $nowArr = array();
                 $length = count($cE);
-                for ($i = $length - 1; $i >= 0; $i--) :
-                    if ($i == $length - 1) :
+                for ($i = $length - 1; $i >= 0; $i--){
+                    if ($i == $length - 1){
                         $nowArr = array($cE[$i] => $value);
-                    else :
+                    }else{
                         $tem = $nowArr;
                         $nowArr = array();
                         $nowArr[$cE[$i]] = $tem;
-                    endif;
-                endfor;
+                    }
+                }
                 self::$_config = Comp('format.format')->arrayMergeRecursiveDistinct(
                     self::$_config,
                     $nowArr
                 );
-            endif;
-        else :
+            }
+        }else{
             self::$_config = $value;
-        endif;
+        }
 
     }
 
@@ -209,7 +207,7 @@ class Ju{
     static public function a($akey)
     {
         $akey = strtolower($akey);
-        return isset(self::$_a[$akey]) ? self::$_a[$akey] : null;
+        return self::$_a[$akey]?? null;
 
     }
 
@@ -236,9 +234,9 @@ class Ju{
     static public function setC($component, array $config = array()){
         $cKey = strtolower($component); 
 
-        if (isset(self::$_c[$cKey])) :
+        if (isset(self::$_c[$cKey])){
             return false;
-        endif;
+        }
 
         $cArr = explode('.', $component);
 
@@ -260,47 +258,46 @@ class Ju{
     static public function autoLoader($class){
         $class = str_replace('\\', DS, $class);
 
-        if (OUTER_START) :
+        if (OUTER_START){
             $appModule = MAN_PATH;
-        else :
+        } else {
             $appModule = ROOT_PATH . DS . Cfg('requestRoute.a_m', DEFAULT_APP_NAME) . DS;
-        endif;
+        }
 
         array_push(self::$autoLoadPath, $appModule);
 
-        if (preg_match("#[A-Z]{1}[a-z0-9]+$#", $class, $match)) :
+        if (preg_match("#[A-Z]{1}[a-z0-9]+$#", $class, $match)){
             $appEnginePath = $appModule . $match[0] . DS;
             $extPath = $appModule . 'Ext' . DS;
             // cmd mode
             $binPath = $appModule . 'Bin' . DS;
             $protocolPath = $appModule . 'Protocol' . DS;
             array_push(self::$autoLoadPath, $appEnginePath, $extPath, $binPath, $protocolPath);
-        endif;
+        }
         self::$autoLoadPath = array_unique(self::$autoLoadPath);
-        foreach (self::$autoLoadPath as $path) :
+        foreach (self::$autoLoadPath as $path){
             $classFile = $path . $class . '.class.php';
-            if (is_file($classFile)) :
+            if (is_file($classFile)){
                 include_once $classFile;
                 $rt = true;
                 break;
-            endif;
-        endforeach;
+            }
+        }
 
-        if (empty($rt)) :
+        if (empty($rt)){
             // 外部调用时其他框架还有其他处理 此处就忽略
-            if (AS_OUTER_FRAME || OUTER_START) :
+            if (AS_OUTER_FRAME || OUTER_START){
                 return false;
-            else :
+            }else{
                 trigger_error('class : ' . $class . ' does not exist !', E_USER_ERROR);
                 exit;
-            endif;
-        endif;
+            }
+        }
 
     }
 
     
-    static public function importPath($path)
-    {
+    static public function importPath($path){
         // array_push(self::$autoLoadPath, rtrim($path, DS) . DS);
         array_unshift(self::$autoLoadPath, rtrim($path, DS) . DS);
 
@@ -351,21 +348,21 @@ class Ju{
      */
     static public function exceptionHandler($e)
     {
-        if (get_class($e) === 'ServiceException') :
+        if (get_class($e) === 'ServiceException'){
             Comp('rpc.service')->response(array('error_code' => '1001', 'error_msg' => $e->getMessage()));
             exit;
-        endif;
+        }
 
-        if (IS_DEBUG && !AS_CMD) :
+        if (IS_DEBUG && !AS_CMD){
             $msg = '<b style="color:#ec8186;">' . get_class($e) . '</b> : ' . $e->getMessage();
-            if (Cfg('DEBUG_SHOW_TRACE')) :
+            if (Cfg('DEBUG_SHOW_TRACE')){
                 Comp('ext.out')->deBug($msg, 'TRACE');
-            else :
-                if (Cfg('DEBUG_SHOW_EXCEPTION')) :
+            }else{
+                if (Cfg('DEBUG_SHOW_EXCEPTION')){
                     Comp('ext.out')->deBug($msg, 'EXCEPTION');
-                endif;
-            endif;
-        endif;
+                }
+            }
+        }
 
     }
 
@@ -442,25 +439,25 @@ class Ju{
      */
     public static function shutDown()
     {
-        if (RUN_AS_SERVICE_HTTP) :
+        if (RUN_AS_SERVICE_HTTP){
             return;
-        endif;
+        }
 
-        if (IS_DEBUG && !AS_CMD) :
-            if (Cfg('DEBUG_SHOW_EXCEPTION')) :
+        if (IS_DEBUG && !AS_CMD){
+            if (Cfg('DEBUG_SHOW_EXCEPTION')){
                 Comp('ext.out')->deBug('', 'EXCEPTION', true);
-            endif;
+            }
 
-            if (Cfg('DEBUG_SHOW_ERROR')) :
+            if (Cfg('DEBUG_SHOW_ERROR')){
                 Comp('ext.out')->deBug('', 'ERROR', true);
                 Comp('ext.out')->deBug('', 'SERVER_ERROR', true);
-            endif;
+            }
 
-            if (Cfg('DEBUG_SHOW_TRACE'))  :
+            if (Cfg('DEBUG_SHOW_TRACE')){
                 Comp('ext.out')->deBug('[SHUTDOWN]', 'TRACE', true);
-            endif;
+            }
 
-        endif;
+        }
 
     }
 

@@ -18,7 +18,7 @@ function Cfg($name = '', $default = 'NOT_RGI'){
 
 }
 
-function U($name = '', $params = array(), $urlMode = 'NOT_INIT'){
+function generateUrl($name = '', $params = array(), $urlMode = 'NOT_INIT'){
     return Comp('url.route')->createUrl($name, $params, $urlMode);
 }
 

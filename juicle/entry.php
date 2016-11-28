@@ -7,7 +7,7 @@
 // 启动时间
 defined('START_TIME') or define('START_TIME', microtime(true));
 // 开启调试 是
-defined('IS_DEBUG') or define('IS_DEBUG', true);
+defined('IS_DEBUG') or define('IS_DEBUG', false);
 // 外部启动 否 默认管理目录Man
 defined('OUTER_START') or define('OUTER_START', false);
 // 自启动session

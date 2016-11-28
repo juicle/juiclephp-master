@@ -9,14 +9,14 @@ class ApplicationCmd extends Application
     // start
     public function start()
     {
-        ArWorker::startAll();
+        Worker::startAll();
 
     }
 
 }
 
 // worker
-class ArWorker
+class Worker
 {
      /**
      * 版本号
@@ -679,7 +679,7 @@ class ArWorker
 }
 
 // tcp 链接
-class ArTcpConnection
+class TcpConnection
 {
     /**
      * 连接状态 连接中
@@ -1010,7 +1010,7 @@ class ArTcpConnection
 }
 
 // event 事件
-class ArEvent
+class Event
 {
     // eventBase
     public static $eventBase = null;
@@ -1175,7 +1175,7 @@ class ArEvent
 
 }
 
-class ArTimer
+class Timer
 {
     /**
      * event
@@ -1233,7 +1233,7 @@ class ArTimer
 }
 
 // 文本协议
-class ArProtocolText
+class ProtocolText
 {
     /**
      * 检查包的完整性
@@ -1276,7 +1276,7 @@ class ArProtocolText
 }
 
 // 上下文
-class ArContext
+class Context
 {
     // holder
     static private $_holder = array();
